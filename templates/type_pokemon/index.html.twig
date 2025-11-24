@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TypePokemon index{% endblock %}
+
+{% block body %}
+    <h1>TypePokemon index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for type_pokemon in type_pokemons %}
+            <tr>
+                <td>{{ type_pokemon.id }}</td>
+                <td>{{ type_pokemon.name }}</td>
+                <td>
+                    <a href="{{ path('app_type_pokemon_show', {'id': type_pokemon.id}) }}">show</a>
+                    <a href="{{ path('app_type_pokemon_edit', {'id': type_pokemon.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_type_pokemon_new') }}">Create new</a>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New TypePokemon{% endblock %}
+
+{% block body %}
+    <h1>Create new TypePokemon</h1>
+
+    {{ include('type_pokemon/_form.html.twig') }}
+
+    <a href="{{ path('app_type_pokemon_index') }}">back to list</a>
+{% endblock %}

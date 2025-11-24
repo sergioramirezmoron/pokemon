@@ -12,6 +12,15 @@
         {% endblock %}
     </head>
     <body>
+    <nav>
+    <ul>
+        {% if is_granted('ROLE_USER') %}
+            <li><a href="{{ path('app_pokemon_index') }}">Pokemons</a></li>
+            <li><a href="{{ path('app_type_pokemon_index') }}">TypePokemons</a></li>
+            <li><a href="{{ path('app_logout') }}">Logout</a></li>
+        {% else %}
+            <li><a href="{{ path('app_login') }}">Login</a></li>
+        {% endif %}
         {% block body %}{% endblock %}
     </body>
 </html>
