@@ -77,12 +77,28 @@ final class PokemonController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_pokemon_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Pokemon $pokemon, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Pokemon $pokemon, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $form = $this->createForm(PokemonType::class, $pokemon);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $imgFile = $form->get('img')->getData();
+
+            if ($imgFile) {
+                $originalFilename = pathinfo($imgFile->getClientOriginalName(), PATHINFO_FILENAME);
+
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imgFile->guessExtension();
+
+                $imgFile->move(
+                    $this->getParameter('uploads_directory'),
+                    $newFilename
+                );
+
+                $pokemon->setImg($newFilename);
+            }
+
             $entityManager->flush();
 
             return $this->redirectToRoute('app_pokemon_index', [], Response::HTTP_SEE_OTHER);
