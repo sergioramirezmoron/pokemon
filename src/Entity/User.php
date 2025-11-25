@@ -46,6 +46,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, Pokemon>
      */
     #[ORM\ManyToMany(targetEntity: Pokemon::class, inversedBy: 'users')]
+    #[ORM\OrderBy(['numPokemon' => 'ASC'])]
     private Collection $pokedex;
 
     /**

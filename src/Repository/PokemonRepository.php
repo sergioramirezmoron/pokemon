@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Pokemon;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -28,6 +29,29 @@ class PokemonRepository extends ServiceEntityRepository
     public function searchByName($name): array
     {
         return $this->createQueryBuilder('p')
+            ->andWhere('p.name LIKE :val')
+            ->setParameter('val', '%' . $name . '%')
+            ->orderBy('p.numPokemon', 'ASC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function searchByNameInPokedex(string $name, User $user): array
+    {
+        $pokedexIds = array_map(
+            static fn (Pokemon $pokemon) => $pokemon->getId(),
+            $user->getPokedex()->toArray()
+        );
+
+        if (empty($pokedexIds)) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.id IN (:pokedex)')
+            ->setParameter('pokedex', $pokedexIds)
             ->andWhere('p.name LIKE :val')
             ->setParameter('val', '%' . $name . '%')
             ->orderBy('p.numPokemon', 'ASC')

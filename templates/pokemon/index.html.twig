@@ -5,7 +5,7 @@
 {% block body %}
     <h1>Pokemon</h1>
 
-    <form action="{{ path('app_pokemon_index') }}" method="get">
+    <form action="" method="get">
         <input type="text" name="name" placeholder="Nombre del pokemon">
         <button type="submit">Buscar</button>
     </form>
@@ -42,7 +42,7 @@
                     {% if not app.user.pokemonCaptured(pokemon) %}
                     <a href="{{ path('app_pokemon_catch', {'id': pokemon.id}) }}">Capturar</a>
                     {% else %}
-                    Capturado
+                    <a href ="{{ path('app_pokemon_kill', {'id': pokemon.id}) }}">Liberar</a>
                     {% endif %}
                     {% endif %}
                 </td>

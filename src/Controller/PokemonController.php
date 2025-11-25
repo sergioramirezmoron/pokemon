@@ -30,15 +30,18 @@ final class PokemonController extends AbstractController
             'pokemon' => $pokemons,
         ]);
     }
-    
+
     #[Route('/pokedex', name: 'app_pokemon_pokedex', methods: ['GET'])]
     public function pokedex(PokemonRepository $pokemonRepository, Request $request): Response
     {
-        if ($name = $request->query->get('name')) {
-            $pokemons = $pokemonRepository->searchByName($name);
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            $pokemons = [];
+        } elseif ($name = $request->query->get('name')) {
+            $pokemons = $pokemonRepository->searchByNameInPokedex($name, $user);
         } else {
-            $user = $this->getUser();
-            $pokemons = $user instanceof User ? $user->getPokedex() : [];
+            $pokemons = $user->getPokedex();
         }
 
         return $this->render('pokemon/index.html.twig', [
@@ -99,9 +102,23 @@ final class PokemonController extends AbstractController
         $entityManager->persist($user);
         $entityManager->flush();
 
-        return $this->render('pokemon/catch.html.twig', [
-            'pokemon' => $pokemon,
-        ]);
+        return $this->redirectToRoute('app_pokemon_pokedex', [], Response::HTTP_SEE_OTHER); 
+    }
+
+    #[Route('kill/{id}', name: 'app_pokemon_kill', methods: ['GET'])]
+    public function kill(Pokemon $pokemon, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Debes iniciar sesión para eliminar un Pokémon.');
+        }
+
+        $user->removePokedex($pokemon);
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('app_pokemon_pokedex', [], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/{id}', name: 'app_pokemon_show', methods: ['GET'])]
