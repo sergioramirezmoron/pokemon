@@ -43,23 +43,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $pokemon;
 
     /**
-     * @var Collection<int, Pokemon>
-     */
-    #[ORM\ManyToMany(targetEntity: Pokemon::class, inversedBy: 'users')]
-    #[ORM\OrderBy(['numPokemon' => 'ASC'])]
-    private Collection $pokedex;
-
-    /**
      * @var Collection<int, Team>
      */
     #[ORM\OneToMany(targetEntity: Team::class, mappedBy: 'trainer')]
     private Collection $teams;
 
+    /**
+     * @var Collection<int, LinePokemon>
+     */
+    #[ORM\OneToMany(targetEntity: LinePokemon::class, mappedBy: 'trainer')]
+    private Collection $linePokemon;
+
     public function __construct()
     {
         $this->pokemon = new ArrayCollection();
-        $this->pokedex = new ArrayCollection();
         $this->teams = new ArrayCollection();
+        $this->linePokemon = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -174,30 +173,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, Pokemon>
-     */
-    public function getPokedex(): Collection
-    {
-        return $this->pokedex;
-    }
-
-    public function addPokedex(Pokemon $pokedex): static
-    {
-        if (!$this->pokedex->contains($pokedex)) {
-            $this->pokedex->add($pokedex);
-        }
-
-        return $this;
-    }
-
-    public function removePokedex(Pokemon $pokedex): static
-    {
-        $this->pokedex->removeElement($pokedex);
-
-        return $this;
-    }
-
-    /**
      * @return Collection<int, Team>
      */
     public function getTeams(): Collection
@@ -218,7 +193,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeTeam(Team $team): static
     {
         if ($this->teams->removeElement($team)) {
-            // set the owning side to null (unless already changed)
             if ($team->getTrainer() === $this) {
                 $team->setTrainer(null);
             }
@@ -227,8 +201,46 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function pokemonCaptured(Pokemon $pokemon): bool
+    /**
+     * @return Collection<int, LinePokemon>
+     */
+    public function getLinePokemon(): Collection
     {
-        return $this->pokedex->contains($pokemon);
+        return $this->linePokemon;
+    }
+
+    public function addLinePokemon(LinePokemon $linePokemon): static
+    {
+        if (!$this->linePokemon->contains($linePokemon)) {
+            $this->linePokemon->add($linePokemon);
+            $linePokemon->setTrainer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLinePokemon(LinePokemon $linePokemon): static
+    {
+        if ($this->linePokemon->removeElement($linePokemon)) {
+            if ($linePokemon->getTrainer() === $this) {
+                $linePokemon->setTrainer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Verifica si el usuario tiene un Pokémon capturado
+     */
+    public function hasPokemon(Pokemon $pokemon): bool
+    {
+        foreach ($this->linePokemon as $linePokemon) {
+            if ($linePokemon->getPokemon() && $linePokemon->getPokemon()->getId() === $pokemon->getId()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

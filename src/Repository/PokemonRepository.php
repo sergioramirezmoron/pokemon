@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\LinePokemon;
 use App\Entity\Pokemon;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -40,10 +41,10 @@ class PokemonRepository extends ServiceEntityRepository
 
     public function searchByNameInPokedex(string $name, User $user): array
     {
-        $pokedexIds = array_map(
-            static fn (Pokemon $pokemon) => $pokemon->getId(),
-            $user->getPokedex()->toArray()
-        );
+        $pokedexIds = array_filter(array_map(
+            static fn (LinePokemon $linePokemon) => $linePokemon->getPokemon()?->getId(),
+            $user->getLinePokemon()->toArray()
+        ));
 
         if (empty($pokedexIds)) {
             return [];

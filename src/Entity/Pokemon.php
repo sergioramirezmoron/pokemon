@@ -36,22 +36,22 @@ class Pokemon
     private Collection $type;
 
     /**
-     * @var Collection<int, User>
-     */
-    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'pokedex')]
-    private Collection $users;
-
-    /**
      * @var Collection<int, Team>
      */
     #[ORM\ManyToMany(targetEntity: Team::class, mappedBy: 'pokemons')]
     private Collection $teams;
 
+    /**
+     * @var Collection<int, LinePokemon>
+     */
+    #[ORM\OneToMany(targetEntity: LinePokemon::class, mappedBy: 'pokemon')]
+    private Collection $linePokemon;
+
     public function __construct()
     {
         $this->type = new ArrayCollection();
-        $this->users = new ArrayCollection();
         $this->teams = new ArrayCollection();
+        $this->linePokemon = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -132,33 +132,6 @@ class Pokemon
     }
 
     /**
-     * @return Collection<int, User>
-     */
-    public function getUsers(): Collection
-    {
-        return $this->users;
-    }
-
-    public function addUser(User $user): static
-    {
-        if (!$this->users->contains($user)) {
-            $this->users->add($user);
-            $user->addPokedex($this);
-        }
-
-        return $this;
-    }
-
-    public function removeUser(User $user): static
-    {
-        if ($this->users->removeElement($user)) {
-            $user->removePokedex($this);
-        }
-
-        return $this;
-    }
-
-    /**
      * @return Collection<int, Team>
      */
     public function getTeams(): Collection
@@ -180,6 +153,36 @@ class Pokemon
     {
         if ($this->teams->removeElement($team)) {
             $team->removePokemon($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, LinePokemon>
+     */
+    public function getLinePokemon(): Collection
+    {
+        return $this->linePokemon;
+    }
+
+    public function addLinePokemon(LinePokemon $linePokemon): static
+    {
+        if (!$this->linePokemon->contains($linePokemon)) {
+            $this->linePokemon->add($linePokemon);
+            $linePokemon->setPokemon($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLinePokemon(LinePokemon $linePokemon): static
+    {
+        if ($this->linePokemon->removeElement($linePokemon)) {
+            // set the owning side to null (unless already changed)
+            if ($linePokemon->getPokemon() === $this) {
+                $linePokemon->setPokemon(null);
+            }
         }
 
         return $this;

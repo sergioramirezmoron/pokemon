@@ -2,9 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\LinePokemon;
 use App\Entity\Pokemon;
 use App\Entity\User;
 use App\Form\PokemonType;
+use App\Repository\LinePokemonRepository;
 use App\Repository\PokemonRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -41,7 +43,11 @@ final class PokemonController extends AbstractController
         } elseif ($name = $request->query->get('name')) {
             $pokemons = $pokemonRepository->searchByNameInPokedex($name, $user);
         } else {
-            $pokemons = $user->getPokedex();
+            // Extraer los Pokemon de los LinePokemon
+            $pokemons = [];
+            foreach ($user->getLinePokemon() as $linePokemon) {
+                $pokemons[] = $linePokemon->getPokemon();
+            }
         }
 
         return $this->render('pokemon/index.html.twig', [
@@ -90,7 +96,7 @@ final class PokemonController extends AbstractController
     }
 
     #[Route('catch/{id}', name: 'app_pokemon_catch', methods: ['GET'])]
-    public function catch(Pokemon $pokemon, EntityManagerInterface $entityManager): Response
+    public function catch(Pokemon $pokemon, EntityManagerInterface $entityManager, LinePokemonRepository $linePokemonRepository): Response
     {
         $user = $this->getUser();
 
@@ -98,26 +104,49 @@ final class PokemonController extends AbstractController
             throw $this->createAccessDeniedException('Debes iniciar sesión para atrapar Pokémon.');
         }
 
-        $user->addPokedex($pokemon);
-        $entityManager->persist($user);
-        $entityManager->flush();
+        $existingLinePokemon = $linePokemonRepository->findOneBy([
+            'trainer' => $user,
+            'pokemon' => $pokemon,
+        ]);
 
+        if ($existingLinePokemon) {
+            $this->addFlash('warning', 'Ya tienes este Pokémon capturado.');
+            return $this->redirectToRoute('app_pokemon_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        $linePokemon = new LinePokemon();
+        $linePokemon->setPokemon($pokemon);
+        $linePokemon->setTrainer($user);
+        $linePokemon->setName($pokemon->getName());
+
+        $entityManager->persist($linePokemon);
+        $entityManager->flush();
         return $this->redirectToRoute('app_pokemon_pokedex', [], Response::HTTP_SEE_OTHER); 
     }
 
     #[Route('kill/{id}', name: 'app_pokemon_kill', methods: ['GET'])]
-    public function kill(Pokemon $pokemon, EntityManagerInterface $entityManager): Response
+    public function kill(Pokemon $pokemon, EntityManagerInterface $entityManager, LinePokemonRepository $linePokemonRepository): Response
     {
         $user = $this->getUser();
 
         if (!$user instanceof User) {
-            throw $this->createAccessDeniedException('Debes iniciar sesión para eliminar un Pokémon.');
+            throw $this->createAccessDeniedException('Debes iniciar sesión para liberar un Pokémon.');
         }
 
-        $user->removePokedex($pokemon);
-        $entityManager->persist($user);
+        $linePokemon = $linePokemonRepository->findOneBy([
+            'trainer' => $user,
+            'pokemon' => $pokemon,
+        ]);
+
+        if (!$linePokemon) {
+            $this->addFlash('warning', 'No tienes este Pokémon capturado.');
+            return $this->redirectToRoute('app_pokemon_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        $entityManager->remove($linePokemon);
         $entityManager->flush();
 
+        $this->addFlash('success', 'Pokémon liberado con éxito.');
         return $this->redirectToRoute('app_pokemon_pokedex', [], Response::HTTP_SEE_OTHER);
     }
 
