@@ -4,7 +4,11 @@
 
 {% block body %}
     <h1>Pokemon</h1>
-
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">
+            {{ message }}
+        </div>
+    {% endfor %}
     <form action="" method="get">
         <input type="text" name="name" placeholder="Nombre del pokemon">
         <button type="submit">Buscar</button>

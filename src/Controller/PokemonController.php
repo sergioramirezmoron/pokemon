@@ -110,7 +110,7 @@ final class PokemonController extends AbstractController
 
         if (random_int(1, 10) >= 4) {
             $this->addFlash('error', '¡El pokémon se escapó!');
-            return $this->redirectToRoute('app_pokemon_pokedex', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_pokemon_index', [], Response::HTTP_SEE_OTHER);
         }
         
         $linePokemon = new LinePokemon();
@@ -121,7 +121,7 @@ final class PokemonController extends AbstractController
 
         $entityManager->persist($linePokemon);
         $entityManager->flush();
-        return $this->redirectToRoute('app_pokemon_pokedex', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_pokemon_index', [], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('kill/{id}', name: 'app_pokemon_kill', methods: ['GET'])]
