@@ -16,6 +16,7 @@ class LinePokemonType extends AbstractType
     {
         $builder
             ->add('name')
+            ->add('level')
             ->add('trainer', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => 'id',

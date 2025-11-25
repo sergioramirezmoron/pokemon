@@ -118,6 +118,7 @@ final class PokemonController extends AbstractController
         $linePokemon->setPokemon($pokemon);
         $linePokemon->setTrainer($user);
         $linePokemon->setName($pokemon->getName());
+        $linePokemon->setLevel(1);
 
         $entityManager->persist($linePokemon);
         $entityManager->flush();

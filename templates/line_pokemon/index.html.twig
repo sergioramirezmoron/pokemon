@@ -10,6 +10,7 @@
             <tr>
                 <th>Id</th>
                 <th>Name</th>
+                <th>Level</th>
                 <th>actions</th>
             </tr>
         </thead>
@@ -18,6 +19,7 @@
             <tr>
                 <td>{{ line_pokemon.id }}</td>
                 <td>{{ line_pokemon.name }}</td>
+                <td>{{ line_pokemon.level }}</td>
                 <td>
                     <a href="{{ path('app_line_pokemon_show', {'id': line_pokemon.id}) }}">show</a>
                     <a href="{{ path('app_line_pokemon_edit', {'id': line_pokemon.id}) }}">edit</a>
@@ -25,7 +27,7 @@
             </tr>
         {% else %}
             <tr>
-                <td colspan="3">no records found</td>
+                <td colspan="4">no records found</td>
             </tr>
         {% endfor %}
         </tbody>
