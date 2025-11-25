@@ -108,19 +108,20 @@ final class PokemonController extends AbstractController
     {
         $user = $this->getUser();
 
-        if (!$user instanceof User) {
-            throw $this->createAccessDeniedException('Debes iniciar sesión para atrapar Pokémon.');
+        if (random_int(1, 10) >= 4) {
+            $this->addFlash('error', '¡El pokémon se escapó!');
+            return $this->redirectToRoute('app_pokemon_pokedex', [], Response::HTTP_SEE_OTHER);
         }
-
+        
         $linePokemon = new LinePokemon();
         $linePokemon->setPokemon($pokemon);
         $linePokemon->setTrainer($user);
         $linePokemon->setName($pokemon->getName());
-        $linePokemon->setLevel(1);
+        $linePokemon->setLevel(random_int(1, 5));
 
         $entityManager->persist($linePokemon);
         $entityManager->flush();
-        return $this->redirectToRoute('app_pokemon_pokedex', [], Response::HTTP_SEE_OTHER); 
+        return $this->redirectToRoute('app_pokemon_pokedex', [], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('kill/{id}', name: 'app_pokemon_kill', methods: ['GET'])]
@@ -128,14 +129,15 @@ final class PokemonController extends AbstractController
     {
         $user = $this->getUser();
 
-        if (!$user instanceof User) {
-            throw $this->createAccessDeniedException('Debes iniciar sesión para liberar un Pokémon.');
-        }
-
         $linePokemon = $linePokemonRepository->findOneBy([
             'trainer' => $user,
             'pokemon' => $pokemon,
         ]);
+
+        if (!$linePokemon) {
+            $this->addFlash('error', 'No se encontró el pokémon en tu equipo.');
+            return $this->redirectToRoute('app_pokemon_pokedex', [], Response::HTTP_SEE_OTHER);
+        }
 
         $entityManager->remove($linePokemon);
         $entityManager->flush();
@@ -148,14 +150,15 @@ final class PokemonController extends AbstractController
     {
         $user = $this->getUser();
 
-        if (!$user instanceof User) {
-            throw $this->createAccessDeniedException('Debes iniciar sesión para entrenar un Pokémon.');
-        }
-
         $linePokemon = $linePokemonRepository->findOneBy([
             'trainer' => $user,
             'pokemon' => $pokemon,
         ]);
+
+        if (!$linePokemon) {
+            $this->addFlash('error', 'No se encontró el pokémon en tu equipo.');
+            return $this->redirectToRoute('app_pokemon_pokedex', [], Response::HTTP_SEE_OTHER);
+        }
 
         $nextLevel = ($linePokemon->getLevel() ?? 0) + 1;
         $linePokemon->setLevel($nextLevel);

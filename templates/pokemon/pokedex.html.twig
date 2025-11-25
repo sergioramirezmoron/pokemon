@@ -5,6 +5,7 @@
 {% block body %}
     <h1>Mi Pokédex</h1>
 
+
     <form action="{{ path('app_pokemon_pokedex') }}" method="get">
         <input type="text" name="name" placeholder="Nombre del Pokémon" value="{{ search }}">
         <button type="submit">Buscar</button>
