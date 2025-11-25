@@ -18,6 +18,14 @@
         </tbody>
     </table>
 
+    {% if type_pokemon.pokemon is not empty %}
+        <ul>
+            {% for pokemon in type_pokemon.pokemon %}
+                <a href="/pokemon/{{pokemon.id}}"><img src="{{ asset('uploads/' ~ pokemon.img) }}" alt="{{ pokemon.name }}" width="50" height="50"></a>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
     <a href="{{ path('app_type_pokemon_index') }}">back to list</a>
 
     <a href="{{ path('app_type_pokemon_edit', {'id': type_pokemon.id}) }}">edit</a>

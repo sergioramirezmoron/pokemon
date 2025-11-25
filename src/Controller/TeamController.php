@@ -38,6 +38,10 @@ final class TeamController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $team->setTrainer($this->getUser());
+            if (count($team->getPokemons()) > 5) {
+                $this->addFlash('error', 'Un equipo no puede tener más de 5 pokémones.');
+                return $this->redirectToRoute('app_team_new', [], Response::HTTP_SEE_OTHER);
+            }
             $entityManager->persist($team);
             $entityManager->flush();
 
@@ -79,7 +83,7 @@ final class TeamController extends AbstractController
     #[Route('/{id}', name: 'app_team_delete', methods: ['POST'])]
     public function delete(Request $request, Team $team, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$team->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $team->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($team);
             $entityManager->flush();
         }

@@ -47,6 +47,7 @@ final class TypePokemonController extends AbstractController
     {
         return $this->render('type_pokemon/show.html.twig', [
             'type_pokemon' => $typePokemon,
+            'pokemons' => $typePokemon->getPokemon(),
         ]);
     }
 

@@ -5,6 +5,11 @@
 {% block body %}
     <h1>Pokemon</h1>
 
+    <form action="{{ path('app_pokemon_index') }}" method="get">
+        <input type="text" name="name" placeholder="Nombre del pokemon">
+        <button type="submit">Buscar</button>
+    </form>
+
     <table class="table">
         <thead>
             <tr>
@@ -33,10 +38,12 @@
                 <td>
                     <a href="{{ path('app_pokemon_show', {'id': pokemon.id}) }}">show</a>
                     <a href="{{ path('app_pokemon_edit', {'id': pokemon.id}) }}">edit</a>
+                    {% if app.user %}
                     {% if not app.user.pokemonCaptured(pokemon) %}
                     <a href="{{ path('app_pokemon_catch', {'id': pokemon.id}) }}">Capturar</a>
                     {% else %}
                     Capturado
+                    {% endif %}
                     {% endif %}
                 </td>
             </tr>

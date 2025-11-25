@@ -5,6 +5,12 @@
 {% block body %}
     <h1>Create new Team</h1>
 
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+
     {{ include('team/_form.html.twig') }}
 
     <a href="{{ path('app_team_index') }}">back to list</a>

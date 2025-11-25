@@ -17,10 +17,32 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 final class PokemonController extends AbstractController
 {
     #[Route(name: 'app_pokemon_index', methods: ['GET'])]
-    public function index(PokemonRepository $pokemonRepository): Response
+    public function index(PokemonRepository $pokemonRepository, Request $request): Response
     {
+        if ($name = $request->query->get('name')) {
+            $pokemons = $pokemonRepository->searchByName($name);
+        } else {
+            $pokemons = $pokemonRepository->findAllOrdered();
+        }
+
+
         return $this->render('pokemon/index.html.twig', [
-            'pokemon' => $pokemonRepository->findAll(),
+            'pokemon' => $pokemons,
+        ]);
+    }
+    
+    #[Route('/pokedex', name: 'app_pokemon_pokedex', methods: ['GET'])]
+    public function pokedex(PokemonRepository $pokemonRepository, Request $request): Response
+    {
+        if ($name = $request->query->get('name')) {
+            $pokemons = $pokemonRepository->searchByName($name);
+        } else {
+            $user = $this->getUser();
+            $pokemons = $user instanceof User ? $user->getPokedex() : [];
+        }
+
+        return $this->render('pokemon/index.html.twig', [
+            'pokemon' => $pokemons,
         ]);
     }
 
