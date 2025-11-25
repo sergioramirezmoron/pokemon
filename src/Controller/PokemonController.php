@@ -55,16 +55,6 @@ final class PokemonController extends AbstractController
                     return str_contains($pokemonName, $searchLower);
                 }
             );
-
-            usort(
-                $linePokemons,
-                static function (LinePokemon $first, LinePokemon $second): int {
-                    $firstNum = $first->getPokemon()?->getNumPokemon() ?? 0;
-                    $secondNum = $second->getPokemon()?->getNumPokemon() ?? 0;
-
-                    return $firstNum <=> $secondNum;
-                }
-            );
         }
 
         return $this->render('pokemon/pokedex.html.twig', [
@@ -122,16 +112,6 @@ final class PokemonController extends AbstractController
             throw $this->createAccessDeniedException('Debes iniciar sesión para atrapar Pokémon.');
         }
 
-        $existingLinePokemon = $linePokemonRepository->findOneBy([
-            'trainer' => $user,
-            'pokemon' => $pokemon,
-        ]);
-
-        if ($existingLinePokemon) {
-            $this->addFlash('warning', 'Ya tienes este Pokémon capturado.');
-            return $this->redirectToRoute('app_pokemon_index', [], Response::HTTP_SEE_OTHER);
-        }
-
         $linePokemon = new LinePokemon();
         $linePokemon->setPokemon($pokemon);
         $linePokemon->setTrainer($user);
@@ -157,15 +137,9 @@ final class PokemonController extends AbstractController
             'pokemon' => $pokemon,
         ]);
 
-        if (!$linePokemon) {
-            $this->addFlash('warning', 'No tienes este Pokémon capturado.');
-            return $this->redirectToRoute('app_pokemon_index', [], Response::HTTP_SEE_OTHER);
-        }
-
         $entityManager->remove($linePokemon);
         $entityManager->flush();
 
-        $this->addFlash('success', 'Pokémon liberado con éxito.');
         return $this->redirectToRoute('app_pokemon_pokedex', [], Response::HTTP_SEE_OTHER);
     }
 
@@ -183,18 +157,10 @@ final class PokemonController extends AbstractController
             'pokemon' => $pokemon,
         ]);
 
-        if (!$linePokemon) {
-            $this->addFlash('warning', 'Captura el Pokémon antes de entrenarlo.');
-
-            return $this->redirectToRoute('app_pokemon_index', [], Response::HTTP_SEE_OTHER);
-        }
-
         $nextLevel = ($linePokemon->getLevel() ?? 0) + 1;
         $linePokemon->setLevel($nextLevel);
 
         $entityManager->flush();
-
-        $this->addFlash('success', sprintf('%s subió al nivel %d.', $linePokemon->getName(), $nextLevel));
 
         return $this->redirectToRoute('app_pokemon_pokedex', [], Response::HTTP_SEE_OTHER);
     }
