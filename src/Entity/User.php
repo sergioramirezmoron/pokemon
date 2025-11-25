@@ -225,4 +225,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    public function pokemonCaptured(Pokemon $pokemon): bool
+    {
+        return $this->pokedex->contains($pokemon);
+    }
 }

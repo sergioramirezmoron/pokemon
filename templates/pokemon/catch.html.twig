@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Captura de {{ pokemon.name }}{% endblock %}
+
+{% block body %}
+    <section class="container mt-4">
+        <h1 class="mb-3">¡Has capturado a {{ pokemon.name }}!</h1>
+
+        <article class="card">
+            <div class="card-body">
+                <p class="card-text">
+                    Este Pokémon se ha añadido a tu Pokédex personal.
+                </p>
+            </div>
+
+        </article>
+
+        <a class="btn btn-primary mt-3" href="{{ path('app_pokemon_index') }}">
+            Volver al listado
+        </a>
+    </section>
+{% endblock %}
+

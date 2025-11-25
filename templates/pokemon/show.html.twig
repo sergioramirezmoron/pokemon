@@ -7,17 +7,22 @@
 
     <table class="table">
         <tbody>
+
             <tr>
-                <th>Id</th>
-                <td>{{ pokemon.id }}</td>
+                <th>NumPokemon</th>
+                <td>{{ pokemon.numPokemon }}</td>
             </tr>
             <tr>
                 <th>Name</th>
                 <td>{{ pokemon.name }}</td>
             </tr>
             <tr>
-                <th>NumPokemon</th>
-                <td>{{ pokemon.numPokemon }}</td>
+                <th>Type</th>
+                <td>
+                    {% for type in pokemon.type %}
+                        {{ type.name }} 
+                    {% endfor %}
+                </td>
             </tr>
             <tr>
                 <img src="{{ asset('uploads/' ~ pokemon.img) }}" width="200" alt="{{ pokemon.name }}">

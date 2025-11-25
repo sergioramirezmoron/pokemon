@@ -16,6 +16,7 @@
             </tr>
         </thead>
         <tbody>
+        
         {% for pokemon in pokemon %}
             <tr>
                 <td>{{ pokemon.numPokemon }}</td>
@@ -32,6 +33,11 @@
                 <td>
                     <a href="{{ path('app_pokemon_show', {'id': pokemon.id}) }}">show</a>
                     <a href="{{ path('app_pokemon_edit', {'id': pokemon.id}) }}">edit</a>
+                    {% if not app.user.pokemonCaptured(pokemon) %}
+                    <a href="{{ path('app_pokemon_catch', {'id': pokemon.id}) }}">Capturar</a>
+                    {% else %}
+                    Capturado
+                    {% endif %}
                 </td>
             </tr>
         {% else %}

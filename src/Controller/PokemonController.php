@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Pokemon;
+use App\Entity\User;
 use App\Form\PokemonType;
 use App\Repository\PokemonRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,18 +34,14 @@ final class PokemonController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $pokemon->setCreatedBy($this->getUser());
 
-            /** @var UploadedFile $imgFile */
             $imgFile = $form->get('img')->getData();
 
             if ($imgFile) {
-                // Nombre original del archivo
                 $originalFilename = pathinfo($imgFile->getClientOriginalName(), PATHINFO_FILENAME);
 
-                // Generar un nombre seguro usando Slugger
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imgFile->guessExtension();
 
-                // Mover el archivo a la carpeta de uploads
                 $imgFile->move(
                     $this->getParameter('uploads_directory'),
                     $newFilename
@@ -52,7 +49,6 @@ final class PokemonController extends AbstractController
 
                 $pokemon->setImg($newFilename);
             } else {
-                // Si no se subió archivo, poner imagen por defecto
                 $pokemon->setImg('default.png');
             }
 
@@ -65,6 +61,24 @@ final class PokemonController extends AbstractController
         return $this->render('pokemon/new.html.twig', [
             'pokemon' => $pokemon,
             'form' => $form,
+        ]);
+    }
+
+    #[Route('catch/{id}', name: 'app_pokemon_catch', methods: ['GET'])]
+    public function catch(Pokemon $pokemon, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Debes iniciar sesión para atrapar Pokémon.');
+        }
+
+        $user->addPokedex($pokemon);
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return $this->render('pokemon/catch.html.twig', [
+            'pokemon' => $pokemon,
         ]);
     }
 
