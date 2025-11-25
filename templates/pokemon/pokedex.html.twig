@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Pokédex{% endblock %}
+
+{% block body %}
+    <h1>Mi Pokédex</h1>
+
+    <form action="{{ path('app_pokemon_pokedex') }}" method="get">
+        <input type="text" name="name" placeholder="Nombre del Pokémon" value="{{ search }}">
+        <button type="submit">Buscar</button>
+    </form>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Nivel</th>
+                <th>Tipo</th>
+                <th>Imagen</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for linePokemon in linePokemons %}
+            {% set pokemon = linePokemon.pokemon %}
+            <tr>
+                <td>{{ pokemon.numPokemon }}</td>
+                <td>{{ linePokemon.name }}</td>
+                <td>{{ linePokemon.level }}</td>
+                <td>
+                    {% for type in pokemon.type %}
+                        {{ type.name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
+                <td>
+                    <img src="{{ asset('uploads/' ~ pokemon.img) }}" width="40" alt="{{ linePokemon.name }}">
+                </td>
+                <td>
+                    <a href="{{ path('app_pokemon_train', {'id': pokemon.id}) }}">Entrenar</a>
+                    <a href="{{ path('app_pokemon_kill', {'id': pokemon.id}) }}">Liberar</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6">Aún no has capturado ningún Pokémon.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_pokemon_index') }}">Volver al listado</a>
+{% endblock %}
+

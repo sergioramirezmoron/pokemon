@@ -34,24 +34,42 @@ final class PokemonController extends AbstractController
     }
 
     #[Route('/pokedex', name: 'app_pokemon_pokedex', methods: ['GET'])]
-    public function pokedex(PokemonRepository $pokemonRepository, Request $request): Response
+    public function pokedex(Request $request): Response
     {
         $user = $this->getUser();
 
-        if (!$user instanceof User) {
-            $pokemons = [];
-        } elseif ($name = $request->query->get('name')) {
-            $pokemons = $pokemonRepository->searchByNameInPokedex($name, $user);
-        } else {
-            // Extraer los Pokemon de los LinePokemon
-            $pokemons = [];
-            foreach ($user->getLinePokemon() as $linePokemon) {
-                $pokemons[] = $linePokemon->getPokemon();
-            }
+        $linePokemons = [];
+        $search = $request->query->get('name', '');
+        $searchLower = strtolower($search);
+
+        if ($user instanceof User) {
+            $linePokemons = array_filter(
+                $user->getLinePokemon()->toArray(),
+                static function (LinePokemon $linePokemon) use ($searchLower): bool {
+                    if ($searchLower === '') {
+                        return true;
+                    }
+
+                    $pokemonName = strtolower($linePokemon->getPokemon()?->getName() ?? '');
+
+                    return str_contains($pokemonName, $searchLower);
+                }
+            );
+
+            usort(
+                $linePokemons,
+                static function (LinePokemon $first, LinePokemon $second): int {
+                    $firstNum = $first->getPokemon()?->getNumPokemon() ?? 0;
+                    $secondNum = $second->getPokemon()?->getNumPokemon() ?? 0;
+
+                    return $firstNum <=> $secondNum;
+                }
+            );
         }
 
-        return $this->render('pokemon/index.html.twig', [
-            'pokemon' => $pokemons,
+        return $this->render('pokemon/pokedex.html.twig', [
+            'linePokemons' => $linePokemons,
+            'search' => $search,
         ]);
     }
 
@@ -148,6 +166,36 @@ final class PokemonController extends AbstractController
         $entityManager->flush();
 
         $this->addFlash('success', 'Pokémon liberado con éxito.');
+        return $this->redirectToRoute('app_pokemon_pokedex', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('train/{id}', name: 'app_pokemon_train', methods: ['GET'])]
+    public function train(Pokemon $pokemon, EntityManagerInterface $entityManager, LinePokemonRepository $linePokemonRepository): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Debes iniciar sesión para entrenar un Pokémon.');
+        }
+
+        $linePokemon = $linePokemonRepository->findOneBy([
+            'trainer' => $user,
+            'pokemon' => $pokemon,
+        ]);
+
+        if (!$linePokemon) {
+            $this->addFlash('warning', 'Captura el Pokémon antes de entrenarlo.');
+
+            return $this->redirectToRoute('app_pokemon_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        $nextLevel = ($linePokemon->getLevel() ?? 0) + 1;
+        $linePokemon->setLevel($nextLevel);
+
+        $entityManager->flush();
+
+        $this->addFlash('success', sprintf('%s subió al nivel %d.', $linePokemon->getName(), $nextLevel));
+
         return $this->redirectToRoute('app_pokemon_pokedex', [], Response::HTTP_SEE_OTHER);
     }
 

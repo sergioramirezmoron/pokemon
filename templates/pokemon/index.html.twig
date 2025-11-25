@@ -39,11 +39,12 @@
                     <a href="{{ path('app_pokemon_show', {'id': pokemon.id}) }}">show</a>
                     <a href="{{ path('app_pokemon_edit', {'id': pokemon.id}) }}">edit</a>
                     {% if app.user %}
-                    {% if not app.user.hasPokemon(pokemon) %}
-                    <a href="{{ path('app_pokemon_catch', {'id': pokemon.id}) }}">Capturar</a>
-                    {% else %}
-                    <a href="{{ path('app_pokemon_kill', {'id': pokemon.id}) }}">Liberar</a>
-                    {% endif %}
+                        {% if not app.user.hasPokemon(pokemon) %}
+                        <a href="{{ path('app_pokemon_catch', {'id': pokemon.id}) }}">Capturar</a>
+                        {% else %}
+                        <a href="{{ path('app_pokemon_kill', {'id': pokemon.id}) }}">Liberar</a>
+                        <a href="{{ path('app_pokemon_train', {'id': pokemon.id}) }}">Entrenar</a>
+                        {% endif %}
                     {% endif %}
                 </td>
             </tr>
